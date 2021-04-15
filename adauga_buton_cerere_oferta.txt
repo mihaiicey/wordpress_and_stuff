@@ -1,0 +1,54 @@
+// Eliminare buton "Adauga in cos"
+//add_action( 'woocommerce_product_quick_edit_end', 'product_custom_fields_add', 99 );
+add_action('woocommerce_product_options_general_product_data', 'product_custom_fields_add', 99 );
+function product_custom_fields_add(){
+    global $post;
+
+    echo '<div class="product_custom_field">';
+
+    // Custom Product Checkbox Field
+    woocommerce_wp_checkbox( array(
+        'id'        => '_no_addcart_product',
+        'desc'      => __('show or hide add to cart', 'woocommerce'),
+        'label'     => __('Ascunde Adaugare In Cos', 'woocommerce'),
+        'desc_tip'  => 'true',
+		'class' => 'checkboxscoferta',
+    ));
+
+    echo '</div>';
+}
+// Save Checkbox
+//add_action( 'woocommerce_product_quick_edit_end', 'product_custom_fields_save', 99 );
+add_action('woocommerce_process_product_meta', 'product_custom_fields_save');
+function product_custom_fields_save($post_id){
+    // Custom Product Text Field
+        $no_addcart_product = $_POST['_no_addcart_product'] ? 'yes' : 'no';
+        update_post_meta($post_id, '_no_addcart_product', esc_attr( $no_addcart_product ));
+}
+
+
+add_filter( 'woocommerce_product_get_price', 'replacing_price_button', 10, 2 );
+function replacing_price_button( $price, $product ) {
+    if (  $product->get_meta('_no_addcart_product') === 'yes' ) {
+        $price = '';
+    }
+    return $price;
+	
+}
+add_filter( 'woocommerce_loop_add_to_cart_link', 'replacing_add_to_cart_button', 10, 2 );
+function replacing_add_to_cart_button( $button, $product ) {
+    if (  $product->get_meta('_no_addcart_product') === 'yes' ) {
+        $button_text = __("Cere oferta", "woocommerce");
+        $button = '<a class="button" href="'. $product->get_permalink().'">' . $button_text.'</a>';
+    }
+    return $button;
+}
+add_action ( 'woocommerce_product_meta_end', 'woocommerce_single_product_cere_oferta_button');
+function woocommerce_single_product_cere_oferta_button() {
+    $product_id = get_the_ID();
+     if ( get_post_meta($product_id, '_no_addcart_product', true) === 'yes' ) {
+		echo "<div class='butoncerere'>";
+        echo "<a href='AICI LINK CATRE FOMRULAR' class='butoncereoferta'> Cere oferta </a>";
+		 echo "</div>";
+     }
+}
